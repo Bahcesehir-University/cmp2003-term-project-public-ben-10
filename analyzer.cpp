@@ -1,4 +1,3 @@
-
 #include "analyzer.h"
 #include <fstream>
 #include <string>
@@ -105,3 +104,4 @@ std::vector<SlotCount> TripAnalyzer::topBusySlots(int k) const {
     if (static_cast<size_t>(k) < result.size()) result.resize(k);
     return result;
 }
+
