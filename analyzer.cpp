@@ -9,20 +9,24 @@
 
 
 void TripAnalyzer::ingestFile(const std::string& csvPath) {
-    // - open file
+    // open file
     std::ifstream file(csvPath);
+    //opens the file in read mode
     if (!file.is_open()) return;
 
-    // - skip header
+    // skip header
     std::string line;
-    std::getline(file, line);
+    std::getline(file, line); //It reads the file line by line where each line corresponds to a single trip record.
 
 
     while (std::getline(file, line)) {
-        // Find positions of commas to extract fields manually
+        // Find positions of commas
+
+        //The position of the first comma in the line
         size_t firstComma = line.find(',');
         if (firstComma >= line.size()) continue;
 
+        //he second comma after the first comma
         size_t secondComma = line.find(',', firstComma + 1);
         if (secondComma >= line.size()) continue;
 
@@ -34,6 +38,9 @@ void TripAnalyzer::ingestFile(const std::string& csvPath) {
 
         std::string zone = line.substr(firstComma + 1, secondComma - firstComma - 1);
         if (zone.empty()) continue;
+        //firstComma + 1 ->The starting index of the zone
+        //secondComma - firstComma - 1 ->The length of the zone
+        //If the zone is empty, skip the line.
 
         std::string dateTime = line.substr(thirdComma + 1, fourthComma - thirdComma - 1);
         size_t spaceIndex = dateTime.find(' ');
@@ -49,7 +56,7 @@ void TripAnalyzer::ingestFile(const std::string& csvPath) {
             hr = std::stoi(hour_str);
             if (hr < 0 || hr > 23) continue;
         } catch (...) {
-            continue; 
+            continue;
         }
 
         // Aggregate counts
@@ -72,7 +79,7 @@ std::vector<ZoneCount> TripAnalyzer::topZones(int k) const {
         return a.zone < b.zone; // Alphabetical order for ties
     });
 
-    // - return first k
+    // return first k
     if (static_cast<size_t>(k) < result.size()) {
         result.resize(k);
     }
@@ -80,7 +87,7 @@ std::vector<ZoneCount> TripAnalyzer::topZones(int k) const {
 }
 
 std::vector<SlotCount> TripAnalyzer::topBusySlots(int k) const {
-    // - sort by count desc, zone asc, hour asc
+    // sort by count desc, zone asc, hour asc
     std::vector<SlotCount> result;
     for (const auto& zonePair : slots) {
         for (const auto& hourPair : zonePair.second) {
@@ -98,7 +105,7 @@ std::vector<SlotCount> TripAnalyzer::topBusySlots(int k) const {
         return a.hour < b.hour; // Numerical order for hours
     });
 
-    // - return first k
+    // return first k
     if (static_cast<size_t>(k) < result.size()) {
         result.resize(k);
     }
