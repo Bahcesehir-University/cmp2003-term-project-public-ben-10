@@ -9,51 +9,57 @@
 
 
 void TripAnalyzer::ingestFile(const std::string& csvPath) {
+    // - open file
     std::ifstream file(csvPath);
     if (!file.is_open()) return;
 
+    // - skip header
     std::string line;
     std::getline(file, line);
 
+
     while (std::getline(file, line)) {
-        size_t firstComma = line.find(',');
-        if (firstComma >= line.size()) continue;
+        // Find positions of commas to extract fields manually
+        size_t c1 = line.find(',');
+        if (c1 == std::string::npos) continue;
 
-        size_t secondComma = line.find(',', firstComma + 1);
-        if (secondComma == line.size()) continue;
+        size_t c2 = line.find(',', c1 + 1);
+        if (c2 == std::string::npos) continue;
 
-        size_t thirdComma = line.find(',', secondComma + 1);
-        if (thirdComma == line.size()) continue;
+        size_t c3 = line.find(',', c2 + 1);
+        if (c3 == std::string::npos) continue;
 
-        size_t fourthComma = line.find(',', thirdComma + 1);
-        if (fourthComma == line.size()) continue;
+        size_t c4 = line.find(',', c3 + 1);
+        if (c4 == std::string::npos) continue; // Need at least 5 fields
 
-        std::string zone = line.substr(firstComma + 1, secondComma - firstComma - 1);
+        std::string zone = line.substr(c1 + 1, c2 - c1 - 1);
         if (zone.empty()) continue;
 
-        std::string dateTime = line.substr(thirdComma + 1, fourthComma - thirdComma - 1);
+        std::string dateTime = line.substr(c3 + 1, c4 - c3 - 1);
         size_t space_pos = dateTime.find(' ');
         if (space_pos == std::string::npos) continue;
 
-        size_t hStartIndex = space_pos + 1;
-        size_t minuteStartIndex = dateTime.find(':', hStartIndex);
-        if ( minuteStartIndex== std::string::npos) continue;
+        size_t hstart = space_pos + 1;
+        size_t colon_pos = dateTime.find(':', hstart);
+        if (colon_pos == std::string::npos) continue;
 
-        std::string hour_str = dateTime.substr(hStartIndex, minuteStartIndex - hStartIndex);
+        std::string hour_str = dateTime.substr(hstart, colon_pos - hstart);
         int hr = 0;
         try {
             hr = std::stoi(hour_str);
             if (hr < 0 || hr > 23) continue;
         } catch (...) {
-            continue;
+            continue; // Cannot parse hour
         }
 
+        // Aggregate counts
         zones[zone]++;
         slots[zone][hr]++;
     }
 }
 
 std::vector<ZoneCount> TripAnalyzer::topZones(int k) const {
+    // - sort by count desc, zone asc
     std::vector<ZoneCount> result;
     for (const auto& pair : zones) {
         result.push_back({pair.first, pair.second});
