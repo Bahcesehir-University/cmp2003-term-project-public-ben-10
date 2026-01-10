@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <map>
 
 struct ZoneCount {
     std::string zone;
@@ -9,11 +11,15 @@ struct ZoneCount {
 
 struct SlotCount {
     std::string zone;
-    int hour;              // 0–23
+    int hour;              
     long long count;
 };
 
 class TripAnalyzer {
+private:
+    std::unordered_map<std::string, long long> zones;
+    std::unordered_map<std::string, std::map<int, long long>> slots;
+
 public:
     // Parse Trips.csv, skip dirty rows, never crash
     void ingestFile(const std::string& csvPath);
