@@ -20,36 +20,36 @@ void TripAnalyzer::ingestFile(const std::string& csvPath) {
 
     while (std::getline(file, line)) {
         // Find positions of commas to extract fields manually
-        size_t c1 = line.find(',');
-        if (c1 == std::string::npos) continue;
+        size_t firstComma = line.find(',');
+        if (firstComma >= line.size()) continue;
 
-        size_t c2 = line.find(',', c1 + 1);
-        if (c2 == std::string::npos) continue;
+        size_t secondComma = line.find(',', firstComma + 1);
+        if (secondComma >= line.size()) continue;
 
-        size_t c3 = line.find(',', c2 + 1);
-        if (c3 == std::string::npos) continue;
+        size_t thirdComma = line.find(',', secondComma + 1);
+        if (thirdComma >= line.size()) continue;
 
-        size_t c4 = line.find(',', c3 + 1);
-        if (c4 == std::string::npos) continue; // Need at least 5 fields
+        size_t fourthComma = line.find(',', thirdComma + 1);
+        if (fourthComma >= line.size()) continue; // Need at least 5 fields
 
-        std::string zone = line.substr(c1 + 1, c2 - c1 - 1);
+        std::string zone = line.substr(firstComma + 1, secondComma - firstComma - 1);
         if (zone.empty()) continue;
 
-        std::string dateTime = line.substr(c3 + 1, c4 - c3 - 1);
-        size_t space_pos = dateTime.find(' ');
-        if (space_pos == std::string::npos) continue;
+        std::string dateTime = line.substr(thirdComma + 1, fourthComma - thirdComma - 1);
+        size_t spaceIndex = dateTime.find(' ');
+        if  (spaceIndex >=dateTime.size())  continue;
 
-        size_t hstart = space_pos + 1;
-        size_t colon_pos = dateTime.find(':', hstart);
-        if (colon_pos == std::string::npos) continue;
+        size_t hStartIndex = spaceIndex + 1;
+        size_t minuteStartIndex = dateTime.find(':', hStartIndex);
+        if (minuteStartIndex >= dateTime.size()) continue;
 
-        std::string hour_str = dateTime.substr(hstart, colon_pos - hstart);
+        std::string hour_str = dateTime.substr(hStartIndex, minuteStartIndex - hStartIndex);
         int hr = 0;
         try {
             hr = std::stoi(hour_str);
             if (hr < 0 || hr > 23) continue;
         } catch (...) {
-            continue; // Cannot parse hour
+            continue; 
         }
 
         // Aggregate counts
